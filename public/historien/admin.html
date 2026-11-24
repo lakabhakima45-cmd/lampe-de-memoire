@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Administration · La lampe de mémoire</title>
+<link rel="stylesheet" href="/assets/style.css"><link rel="icon" href="data:,">
+<style>.log{max-height:300px;overflow-y:auto;font-size:14px;display:flex;flex-direction:column;gap:4px}</style>
+</head>
+<body>
+<main id="contenu" tabindex="-1"><section class="band"><div class="wrap" style="display:flex;flex-direction:column;gap:20px">
+  <div class="pagehead" style="margin:0"><h1 data-i18n="ad_title" style="font-size:clamp(30px,4vw,44px)"></h1><p class="lead" data-i18n="ad_lead"></p></div>
+  <p class="err" id="need" hidden><span data-i18n="ad_need"></span> <a href="/historien/" data-i18n="h_login"></a></p>
+  <div id="panel" hidden><div style="display:flex;flex-direction:column;gap:20px">
+    <div class="card"><h2 data-i18n="ad_pending" style="font-size:26px"></h2><div id="pending"></div></div>
+    <div class="card"><h2 data-i18n="ad_vals" style="font-size:26px"></h2>
+      <div style="overflow-x:auto"><table class="stack"><thead><tr id="vth"></tr></thead><tbody id="vals"></tbody></table></div>
+      <form id="addVal" class="row" style="margin-top:12px">
+        <label style="flex:1 1 140px"><span data-i18n="ad_name"></span><input type="text" id="nNom" required></label>
+        <label style="flex:1 1 140px"><span data-i18n="ad_role"></span><select id="nRole"><option value="historien"></option><option value="archiviste"></option><option value="moderateur"></option></select></label>
+        <label style="flex:2 1 220px"><span data-i18n="ad_spec"></span><input type="text" id="nSpec" required></label>
+        <label style="flex:1 1 120px"><span data-i18n="ad_langs"></span><input type="text" id="nLangs" value="fr" dir="ltr"></label>
+        <button class="btn p" type="submit" data-i18n="ad_add" style="align-self:flex-end"></button>
+      </form></div>
+    <div class="split">
+      <div class="card"><h2 data-i18n="ad_stats" style="font-size:26px"></h2><div id="stats"></div>
+        <div class="row"><button class="btn p" id="sim" data-i18n="ad_sim"></button><button class="btn" id="digest" data-i18n="ad_digest"></button></div><div id="simOut"></div></div>
+      <div class="card"><h2 data-i18n="ad_journal" style="font-size:26px"></h2><div class="log" id="log"></div></div>
+    </div>
+    <div class="card"><h2 data-i18n="ad_outbox" style="font-size:26px"></h2><div class="log" id="outbox"></div></div>
+  </div></div>
+</div></section></main>
+<script src="/assets/i18n.js"></script><script src="/assets/common.js"></script>
+<script>
+{
+  const $ = id => document.getElementById(id);
+  let V = [], ST = [], J = [], O = [], P = [], SIM = null;
+  const bars = rows => { const mx = Math.max(1, ...rows.map(r => r[1])); return rows.map(([k, n]) => `<div class="hrow"><span>${esc(k)}</span><span class="bar"><i style="width:${n / mx * 100}%"></i></span><span class="num">${n}</span></div>`).join(''); };
+  function render() {
+    const R = T('roles');
+    $('pending').innerHTML = P.length ? `<table class="stack"><thead><tr><th>${esc(T('ad_th')[0])}</th><th>${esc(T('ad_th')[1])}</th><th>${esc(T('ad_th')[2])}</th><th>${esc(T('ad_th')[3])}</th><th></th></tr></thead><tbody>${P.map(v => `<tr><td>${esc(v.nom)}<br><span class="note" dir="ltr">${esc(v.id)} · ${esc(v.email)}</span></td><td>${esc(R[v.role] || v.role)}</td><td>${v.spec.map(s => `<span class="tag">${esc(s)}</span>`).join(' ')}</td><td dir="ltr">${esc(v.langs.join(', '))}</td><td><div class="row"><button class="btn ok" data-ap="${esc(v.id)}">${esc(T('ad_approve'))}</button><button class="btn bad" data-rj="${esc(v.id)}">${esc(T('ad_reject'))}</button></div></td></tr>`).join('')}</tbody></table>` : `<p class="note">${esc(T('ad_none'))}</p>`;
+    $('vth').innerHTML = T('ad_th').map(s => `<th>${esc(s)}</th>`).join('');
+    $('vals').innerHTML = V.map(v => `<tr><td>${esc(v.nom)}</td><td>${esc(R[v.role] || v.role)}</td><td>${v.spec.map(s => `<span class="tag">${esc(s)}</span>`).join(' ')}</td><td dir="ltr">${esc(v.langs.join(', '))}</td><td>${v.role === 'admin' ? esc(T('ad_yes')) : `<label class="row" style="flex-direction:row;font-weight:400"><input type="checkbox" data-id="${esc(v.id)}"${v.dispo ? ' checked' : ''} style="width:22px;height:22px;min-height:0"> ${esc(T(v.dispo ? 'ad_yes' : 'ad_no'))}</label>`}</td><td class="num">${v.a_traiter}</td></tr>`).join('');
+    [...$('nRole').options].forEach(o => o.textContent = R[o.value]);
+    $('stats').innerHTML = bars(ST.map(s => [T('st')[s.status] || s.status, s.n]));
+    $('log').innerHTML = J.map(j => `<div><span class="note" dir="ltr">${esc(j.at)}</span> · <b>${esc(j.actor)}</b> · ${esc(j.action)}</div>`).join('');
+    $('outbox').innerHTML = O.length ? O.map(o => `<div><span class="note" dir="ltr">${esc(o.created_at)}</span> · <b>${esc(o.to_user)}</b> · ${esc(o.subject)}</div>`).join('') : '—';
+    if (SIM) { const s = SIM, lab = T('ad_sim_res'); $('simOut').innerHTML = bars([[lab[0], s.spam], [lab[1], s.doublons], [lab[2], s.a_verifier], [lab[3], s.prioritaires]]) + `<p class="note" style="margin:10px 0 4px">${esc(T('ad_split'))}</p>` + bars(s.repartition.map(r => [r.nom, r.n])) + `<p class="note">${esc(T('ad_ms'))} ${s.ms} ms</p>`; }
+  }
+  async function load() {
+    try { [V, ST, J, O, P] = await Promise.all(['/api/admin/validators', '/api/admin/stats', '/api/admin/journal', '/api/admin/outbox', '/api/admin/pending'].map(u => api(u))); $('panel').hidden = false; $('need').hidden = true; render(); }
+    catch { $('need').hidden = false; $('panel').hidden = true; }
+  }
+  $('vals').onchange = async e => { const id = e.target.dataset.id; if (!id) return; await api(`/api/admin/validators/${id}`, { method: 'PATCH', body: { dispo: e.target.checked } }); load(); };
+  $('addVal').onsubmit = async e => { e.preventDefault(); try { await api('/api/admin/validators', { method: 'POST', body: { nom: $('nNom').value, role: $('nRole').value, spec: $('nSpec').value, langs: $('nLangs').value } }); e.target.reset(); $('nLangs').value = 'fr'; load(); } catch (err) { toast(err.message); } };
+  $('pending').onclick = async e => { const b = e.target.closest('button[data-ap],button[data-rj]'); if (!b) return; const id = b.dataset.ap || b.dataset.rj; await api(`/api/admin/validators/${id}/${b.dataset.ap ? 'approve' : 'reject'}`, { method: 'POST' }); toast(T(b.dataset.ap ? 'ad_approved' : 'ad_rejected')); load(); };
+  $('sim').onclick = async () => { SIM = await api('/api/admin/simulate', { method: 'POST' }); load(); };
+  $('digest').onclick = async () => { const r = await api('/api/admin/digest', { method: 'POST' }); toast(`${r.emails} e-mail(s)`); load(); };
+  addEventListener('langchange', render);
+  load();
+}
+</script>
+</body>
+</html>

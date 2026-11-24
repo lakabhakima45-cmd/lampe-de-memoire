@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La lampe de mémoire</title>
+<meta name="description" content="Un mur dans le noir qu'on éclaire pour révéler les messages de la casemate n°17 du Fort de Romainville.">
+<link rel="stylesheet" href="/assets/style.css"><link rel="icon" href="data:,">
+</head>
+<body>
+<main id="contenu" tabindex="-1">
+  <section class="band"><div class="wrap hero">
+    <div class="txt">
+      <h1 data-i18n="home_title"></h1>
+      <p class="lead" data-i18n="home_lead" style="color:var(--ink);font-family:Lora,serif;font-style:italic"></p>
+      <p class="lead" data-i18n="home_p"></p>
+      <div class="row"><a class="btn p" href="/mur" data-i18n="home_go"></a><a class="btn" href="/fonctionnement" data-i18n="home_how"></a></div>
+    </div>
+    <div class="wallfig"><canvas id="hero" role="img" data-i18n-aria="wall_alt"></canvas></div>
+  </div></section>
+
+  <section class="band paper"><div class="wrap">
+    <div class="pagehead"><h2 data-i18n="concept_h"></h2><p class="lead" data-i18n="concept_p"></p></div>
+    <div class="grid">
+      <div class="card"><h3 data-i18n="c1_h"></h3><p data-i18n="c1_p"></p></div>
+      <div class="card"><h3 data-i18n="c2_h"></h3><p data-i18n="c2_p"></p></div>
+      <div class="card"><h3 data-i18n="c3_h"></h3><p data-i18n="c3_p"></p></div>
+    </div>
+  </div></section>
+
+  <section class="band"><div class="wrap">
+    <div class="pagehead"><h2 data-i18n="who_h"></h2></div>
+    <div class="grid">
+      <div class="card"><h3 data-i18n="w1_h"></h3><p data-i18n="w1_p"></p></div>
+      <div class="card"><h3 data-i18n="w2_h"></h3><p data-i18n="w2_p"></p></div>
+      <div class="card"><h3 data-i18n="w3_h"></h3><p data-i18n="w3_p"></p></div>
+    </div>
+  </div></section>
+
+  <section class="band alt"><div class="wrap split" style="align-items:center">
+    <div class="pagehead" style="margin:0"><h2 data-i18n="labels_h"></h2><p class="lead" data-i18n="labels_p"></p></div>
+    <div class="labels" id="labels"></div>
+  </div></section>
+
+  <section class="band"><div class="wrap" style="text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center">
+    <h2 data-i18n="cta_h"></h2><p class="lead" data-i18n="cta_p"></p><a class="btn p" href="/mur" data-i18n="home_go"></a>
+  </div></section>
+</main>
+<script src="/assets/i18n.js"></script><script src="/assets/common.js"></script><script src="/assets/wall.js"></script>
+<script>
+{
+  const drawLabels = () => { document.getElementById('labels').innerHTML = Object.entries(T('labels')).map(([k, v]) => `<span class="label l-${k}" style="font-size:16px;padding:8px 16px">${esc(v)}</span>`).join(''); };
+  addEventListener('langchange', drawLabels); drawLabels();
+  fetch('/api/messages').then(r => r.json()).then(ms => makeWall(document.getElementById('hero'), ms, { auto: true })).catch(() => makeWall(document.getElementById('hero'), [], { auto: true }));
+}
+</script>
+</body>
+</html>

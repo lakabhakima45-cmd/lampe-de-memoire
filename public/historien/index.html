@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Espace historien · La lampe de mémoire</title>
+<link rel="stylesheet" href="/assets/style.css"><link rel="icon" href="data:,">
+<style>
+.item{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.item blockquote{margin:0;font-family:Lora,serif;font-style:italic;font-size:18px}
+.prio{font-size:12px;font-weight:700;color:#1E1B18;background:#E7C27A;border-radius:6px;padding:2px 8px}
+.login{max-width:420px;display:flex;flex-direction:column;gap:14px}
+</style>
+</head>
+<body>
+<main id="contenu" tabindex="-1"><section class="band"><div class="wrap">
+  <div class="row" style="justify-content:space-between;margin-bottom:20px">
+    <h1 data-i18n="h_title" style="font-size:clamp(30px,4vw,44px)"></h1>
+    <div class="row" id="who" hidden><span id="hello"></span><a class="btn" href="/historien/admin" id="adminLink" hidden data-i18n="h_admin"></a><button class="btn" id="pwBtn" data-i18n="pw_title" aria-expanded="false"></button><button class="btn" id="logout" data-i18n="h_logout"></button></div>
+  </div>
+
+  <form class="login card" id="login" hidden>
+    <h2 data-i18n="h_login" style="font-size:26px"></h2>
+    <label><span data-i18n="h_id"></span><input type="text" id="uid" autocomplete="username" required dir="ltr"></label>
+    <label><span data-i18n="h_pass"></span><input type="password" id="pwd" autocomplete="current-password" required dir="ltr"></label>
+    <label class="row" style="flex-direction:row;font-weight:400"><input type="checkbox" class="showpw" style="width:22px;height:22px;min-height:0"> <span data-i18n="show_pw"></span></label>
+    <p class="err" id="lErr" role="alert"></p>
+    <button class="btn p" type="submit" data-i18n="h_enter"></button>
+    <p class="note" data-i18n="h_demo"></p>
+    <p><span data-i18n="reg_new"></span> <button type="button" class="btn" id="toReg" data-i18n="reg_new_btn"></button></p>
+  </form>
+
+  <form class="login card" id="reg" hidden novalidate style="max-width:560px">
+    <h2 data-i18n="reg_title" style="font-size:26px"></h2>
+    <p class="note" data-i18n="reg_lead"></p>
+    <label><span data-i18n="reg_nom"></span><input type="text" id="rNom" required autocomplete="name"></label>
+    <label><span data-i18n="reg_id"></span><input type="text" id="rId" required autocomplete="username" dir="ltr" pattern="[a-z0-9._-]{3,20}"></label>
+    <label><span data-i18n="reg_mail"></span><input type="email" id="rMail" required autocomplete="email" dir="ltr"></label>
+    <label><span data-i18n="reg_pass"></span><input type="password" id="rPass" required autocomplete="new-password" dir="ltr" aria-describedby="pwRules"></label>
+    <label><span data-i18n="reg_pass2"></span><input type="password" id="rPass2" required autocomplete="new-password" dir="ltr"></label>
+    <p class="note" id="pwRules" data-i18n="reg_rules"></p>
+    <label class="row" style="flex-direction:row;font-weight:400"><input type="checkbox" class="showpw" style="width:22px;height:22px;min-height:0"> <span data-i18n="show_pw"></span></label>
+    <label><span data-i18n="reg_role"></span><select id="rRole"><option value="historien"></option><option value="archiviste"></option><option value="moderateur"></option></select></label>
+    <label><span data-i18n="reg_spec"></span><input type="text" id="rSpec"></label>
+    <label><span data-i18n="reg_langs"></span><input type="text" id="rLangs" value="fr" dir="ltr"></label>
+    <p class="err" id="rErr" role="alert"></p>
+    <p id="rOk" role="status" style="color:#9FD3A8;font-weight:600"></p>
+    <button class="btn p" type="submit" data-i18n="reg_send"></button>
+    <p><span data-i18n="reg_have"></span> <button type="button" class="btn" id="toLogin" data-i18n="reg_have_btn"></button></p>
+  </form>
+
+  <form class="login card" id="pwForm" hidden style="margin-bottom:20px">
+    <h2 data-i18n="pw_title" style="font-size:22px"></h2>
+    <label><span data-i18n="pw_old"></span><input type="password" id="pOld" autocomplete="current-password" dir="ltr" required></label>
+    <label><span data-i18n="pw_new"></span><input type="password" id="pNew" autocomplete="new-password" dir="ltr" required></label>
+    <p class="note" data-i18n="reg_rules"></p>
+    <p class="err" id="pErr" role="alert"></p>
+    <button class="btn p" type="submit" data-i18n="pw_save"></button>
+  </form>
+  <div id="space" hidden>
+    <h2 data-i18n="h_queue" style="font-size:26px;margin-bottom:6px"></h2>
+    <p class="note" id="qInfo" style="margin-bottom:14px"></p>
+    <div id="queue" style="display:flex;flex-direction:column;gap:12px"></div>
+  </div>
+</div></section></main>
+<script src="/assets/i18n.js"></script><script src="/assets/common.js"></script>
+<script>
+{
+  let me = null, Q = [];
+  const $ = id => document.getElementById(id);
+  async function start() {
+    try { me = await api('/api/me'); } catch { me = null; }
+    $('login').hidden = !!me; $('reg').hidden = true; $('space').hidden = !me; $('who').hidden = !me; $('pwForm').hidden = true;
+    if (me) { $('hello').textContent = `${T('h_hello')} ${me.nom} · ${T('roles')[me.role]}`; $('adminLink').hidden = me.role !== 'admin'; await loadQueue(); }
+  }
+  $('login').onsubmit = async e => {
+    e.preventDefault(); $('lErr').textContent = '';
+    try { await api('/api/login', { method: 'POST', body: { id: $('uid').value, password: $('pwd').value } }); start(); }
+    catch (err) { $('lErr').textContent = (T('err') || {})[err.code] || T('h_bad'); }
+  };
+  const errMsg = err => (T('err') || {})[err.code] || err.message;
+  $('toReg').onclick = () => { $('login').hidden = true; $('reg').hidden = false; $('rNom').focus(); };
+  $('toLogin').onclick = () => { $('reg').hidden = true; $('login').hidden = false; $('uid').focus(); };
+  document.querySelectorAll('.showpw').forEach(c => c.onchange = () => c.closest('form').querySelectorAll('input[autocomplete$=password]').forEach(i => i.type = c.checked ? 'text' : 'password'));
+  const roleOpts = () => [...$('rRole').options].forEach(o => o.textContent = T('roles')[o.value]);
+  addEventListener('langchange', roleOpts); roleOpts();
+  $('reg').onsubmit = async e => {
+    e.preventDefault(); $('rErr').textContent = ''; $('rOk').textContent = '';
+    if ($('rPass').value !== $('rPass2').value) { $('rErr').textContent = T('err').mismatch; return; }
+    try {
+      await api('/api/register', { method: 'POST', body: { nom: $('rNom').value, id: $('rId').value, email: $('rMail').value, password: $('rPass').value, role: $('rRole').value, spec: $('rSpec').value, langs: $('rLangs').value } });
+      $('rOk').textContent = T('reg_ok'); e.target.querySelectorAll('input[type=password]').forEach(i => i.value = '');
+    } catch (err) { $('rErr').textContent = errMsg(err); }
+  };
+  $('pwBtn').onclick = () => { const f = $('pwForm'); f.hidden = !f.hidden; $('pwBtn').setAttribute('aria-expanded', !f.hidden); if (!f.hidden) $('pOld').focus(); };
+  $('pwForm').onsubmit = async e => {
+    e.preventDefault(); $('pErr').textContent = '';
+    try { await api('/api/me/password', { method: 'POST', body: { old: $('pOld').value, password: $('pNew').value } }); toast(T('pw_ok')); e.target.reset(); e.target.hidden = true; }
+    catch (err) { $('pErr').textContent = errMsg(err); }
+  };
+  $('logout').onclick = async () => { await api('/api/logout', { method: 'POST' }); start(); };
+  async function loadQueue() { Q = await api('/api/queue'); render(); }
+  function render() {
+    const L = T('labels'), TY = { ...T('types'), lecture: 'IA' };
+    $('qInfo').textContent = Q.length ? `${Q.length} · ${T('h_queue')}` : '';
+    $('queue').innerHTML = Q.length ? Q.map(c => {
+      const mine = c.scores.find(s => s.id === me.id);
+      const def = (c.type === 'souvenir' || c.type === 'document') ? 'famille' : c.type === 'lecture' ? 'ia' : 'verifie';
+      return `<article class="item" data-id="${c.id}">
+      <div class="row" style="justify-content:space-between"><span class="note">n°${c.id} · ${esc(T('h_type'))} : ${esc(TY[c.type] || c.type)} · ${esc(T('h_msg'))} : ${esc(c.message || c.msg)} · ${esc(c.lang)}</span>${c.prio ? `<span class="prio">${esc(T('h_prio'))}</span>` : ''}</div>
+      <blockquote dir="auto">${esc(c.text)}</blockquote>
+      <div>${c.keywords.map(k => `<span class="kw">${esc((T('kw') || {})[k] || k)}</span>`).join('')}${c.dups ? ` <span class="tag">+${c.dups} ${esc(T('h_dups'))}</span>` : ''}${c.file_path ? ` <a href="/api/uploads/${esc(c.file_path)}" target="_blank" rel="noopener">${esc(T('h_file'))} (${esc(c.file_name)})</a>` : ''}</div>
+      <p class="note">${esc(T('h_why'))} ${mine ? esc(mine.why) + ' · score ' + mine.score : '—'}</p>
+      <div class="row"><label class="sr" for="lab${c.id}">${esc(T('h_label'))}</label><select id="lab${c.id}" class="lab" style="width:auto">${Object.entries(L).map(([k, v]) => `<option value="${k}"${k === def ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select>
+        <button class="btn ok" data-a="validate">${esc(T('h_validate'))}</button><button class="btn" data-a="edit">${esc(T('h_edit'))}</button><button class="btn" data-a="more">${esc(T('h_more'))}</button><button class="btn bad" data-a="no">${esc(T('h_refuse'))}</button></div>
+      <div class="extra"></div></article>`;
+    }).join('') : `<div class="card"><p>${esc(T('h_empty'))}</p></div>`;
+  }
+  $('queue').onclick = async e => {
+    const b = e.target.closest('button[data-a]'); if (!b) return;
+    const it = b.closest('.item'), id = it.dataset.id, ex = it.querySelector('.extra'), label = it.querySelector('.lab').value;
+    const a = b.dataset.a;
+    try {
+      if (a === 'validate') { await api(`/api/contributions/${id}/validate`, { method: 'POST', body: { label } }); toast(T('h_done_ok')); return loadQueue(); }
+      if (a === 'edit') { ex.innerHTML = `<label>${esc(T('h_edit'))}<textarea rows="3" dir="auto">${esc(Q.find(c => String(c.id) === id).text)}</textarea></label><div class="row" style="margin-top:8px"><button class="btn ok" data-a="save">${esc(T('h_save'))}</button></div>`; return; }
+      if (a === 'save') { await api(`/api/contributions/${id}/validate`, { method: 'POST', body: { label, text: ex.querySelector('textarea').value } }); toast(T('h_done_ok')); return loadQueue(); }
+      if (a === 'no') { ex.innerHTML = `<label>${esc(T('h_reason'))}<input type="text"></label><div class="row" style="margin-top:8px"><button class="btn bad" data-a="confirmNo">${esc(T('h_confirm'))}</button></div>`; return; }
+      if (a === 'confirmNo') { await api(`/api/contributions/${id}/refuse`, { method: 'POST', body: { reason: ex.querySelector('input').value } }); toast(T('h_done_no')); return loadQueue(); }
+      if (a === 'more') { ex.innerHTML = `<label>${esc(T('h_question'))}<input type="text"></label><div class="row" style="margin-top:8px"><button class="btn" data-a="sendQ">${esc(T('h_ask'))}</button></div>`; return; }
+      if (a === 'sendQ') { const r = await api(`/api/contributions/${id}/ask`, { method: 'POST', body: { question: ex.querySelector('input').value } }); toast(r.emailed ? T('h_done_ask') : T('h_noemail')); ex.innerHTML = ''; }
+    } catch (err) { toast(err.message); }
+  };
+  addEventListener('langchange', () => { if (me) { $('hello').textContent = `${T('h_hello')} ${me.nom} · ${T('roles')[me.role]}`; render(); } });
+  start();
+}
+</script>
+</body>
+</html>

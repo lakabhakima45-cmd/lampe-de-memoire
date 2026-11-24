@@ -1,0 +1,263 @@
+[
+ {
+  "id": "m1718",
+  "graffiti": "1718",
+  "x": 640,
+  "y": 370,
+  "r": 0,
+  "size": 0,
+  "special": true,
+  "label": "verifie",
+  "i18n": {
+   "fr": {
+    "title": "« 17 » barré, « 18 » au-dessus",
+    "story": "Un groupe de femmes résistantes venues de Rennes devait partir pour Ravensbrück le 17. Le départ a été repoussé d’un jour. Une main a corrigé la date sur le mur."
+   },
+   "en": {
+    "title": "“17” crossed out, “18” above",
+    "story": "A group of women from the Resistance, brought from Rennes, was due to leave for Ravensbrück on the 17th. The departure was delayed by one day. Someone corrected the date on the wall."
+   },
+   "es": {
+    "title": "«17» tachado, «18» encima",
+    "story": "Un grupo de mujeres de la Resistencia, traídas desde Rennes, debía partir hacia Ravensbrück el día 17. La salida se retrasó un día. Alguien corrigió la fecha en la pared."
+   },
+   "ar": {
+    "title": "«17» مشطوب، و«18» فوقه",
+    "story": "كان من المقرر أن تغادر مجموعة من نساء المقاومة القادمات من رين إلى رافنسبروك يوم 17. تأجّل الرحيل يومًا واحدًا، وصحّح أحدهم التاريخ على الجدار."
+   }
+  },
+  "real": true
+ },
+ {
+  "id": "courage",
+  "graffiti": "Courage",
+  "x": 300,
+  "y": 250,
+  "r": -0.07,
+  "size": 36,
+  "special": false,
+  "label": "verifie",
+  "i18n": {
+   "fr": {
+    "title": "« Courage »",
+    "story": "Un mot écrit pour se donner de la force, ou pour en donner à ceux qui arriveraient après."
+   },
+   "en": {
+    "title": "“Courage”",
+    "story": "A word written to find strength, or to give it to those who would come next."
+   },
+   "es": {
+    "title": "«Courage» (Valor)",
+    "story": "Una palabra escrita para darse fuerza, o para dársela a quienes vendrían después."
+   },
+   "ar": {
+    "title": "«Courage» (شجاعة)",
+    "story": "كلمة كُتبت لاستمداد القوة، أو لمنحها لمن سيأتي بعد ذلك."
+   }
+  },
+  "real": false
+ },
+ {
+  "id": "oubli",
+  "graffiti": "Ne m’oubliez pas",
+  "x": 975,
+  "y": 235,
+  "r": 0.05,
+  "size": 30,
+  "special": false,
+  "label": "inconnu",
+  "i18n": {
+   "fr": {
+    "title": "« Ne m’oubliez pas »",
+    "story": "On ne sait pas qui a écrit ce message. La fiche le dit clairement : on ne cache pas ce qu’on ne sait pas."
+   },
+   "en": {
+    "title": "“Do not forget me”",
+    "story": "We do not know who wrote this message. The record says so clearly: we do not hide what we do not know."
+   },
+   "es": {
+    "title": "«No me olvidéis»",
+    "story": "No sabemos quién escribió este mensaje. La ficha lo dice claramente: no ocultamos lo que no sabemos."
+   },
+   "ar": {
+    "title": "«لا تنسوني»",
+    "story": "لا نعرف من كتب هذه الرسالة. البطاقة تقول ذلك بوضوح: نحن لا نخفي ما لا نعرفه."
+   }
+  },
+  "real": false
+ },
+ {
+  "id": "liberte",
+  "graffiti": "Liberté",
+  "x": 640,
+  "y": 150,
+  "r": -0.04,
+  "size": 34,
+  "special": false,
+  "label": "ia",
+  "i18n": {
+   "fr": {
+    "title": "« Liberté »",
+    "story": "Lecture proposée par l’IA. Les dernières lettres sont abîmées. Un historien doit encore vérifier."
+   },
+   "en": {
+    "title": "“Liberté” (Freedom)",
+    "story": "Reading suggested by the AI. The last letters are damaged. A historian still has to check it."
+   },
+   "es": {
+    "title": "«Liberté» (Libertad)",
+    "story": "Lectura propuesta por la IA. Las últimas letras están dañadas. Un historiador aún debe verificarla."
+   },
+   "ar": {
+    "title": "«Liberté» (حرية)",
+    "story": "قراءة اقترحها الذكاء الاصطناعي. الحروف الأخيرة تالفة، ولا يزال على مؤرّخ أن يتحقق منها."
+   }
+  },
+  "real": false
+ },
+ {
+  "id": "rennes",
+  "graffiti": "Rennes 1944",
+  "x": 330,
+  "y": 530,
+  "r": 0.06,
+  "size": 30,
+  "special": false,
+  "label": "famille",
+  "i18n": {
+   "fr": {
+    "title": "« Rennes 1944 »",
+    "story": "Une famille a envoyé une lettre qui parle de ce départ. L’historienne l’a vérifiée avant de la publier."
+   },
+   "en": {
+    "title": "“Rennes 1944”",
+    "story": "A family sent a letter about this departure. The historian checked it before publishing it."
+   },
+   "es": {
+    "title": "«Rennes 1944»",
+    "story": "Una familia envió una carta que habla de esta salida. La historiadora la verificó antes de publicarla."
+   },
+   "ar": {
+    "title": "«رين 1944»",
+    "story": "أرسلت عائلة رسالة تتحدث عن هذا الرحيل، وتحققت منها المؤرّخة قبل نشرها."
+   }
+  },
+  "real": false
+ },
+ {
+  "id": "vive",
+  "graffiti": "Vive la France",
+  "x": 960,
+  "y": 525,
+  "r": -0.05,
+  "size": 32,
+  "special": false,
+  "label": "verifie",
+  "i18n": {
+   "fr": {
+    "title": "« Vive la France »",
+    "story": "Un cri d’espoir et de résistance, écrit au crayon."
+   },
+   "en": {
+    "title": "“Long live France”",
+    "story": "A cry of hope and resistance, written in pencil."
+   },
+   "es": {
+    "title": "«¡Viva Francia!»",
+    "story": "Un grito de esperanza y de resistencia, escrito a lápiz."
+   },
+   "ar": {
+    "title": "«تحيا فرنسا»",
+    "story": "صرخة أمل ومقاومة، مكتوبة بقلم رصاص."
+   }
+  },
+  "real": false
+ },
+ {
+  "id": "maman",
+  "graffiti": "Maman, je t’embrasse",
+  "x": 640,
+  "y": 610,
+  "r": 0.03,
+  "size": 28,
+  "special": false,
+  "label": "inconnu",
+  "i18n": {
+   "fr": {
+    "title": "« Maman, je t’embrasse »",
+    "story": "Un message pour une mère. L’auteur reste inconnu."
+   },
+   "en": {
+    "title": "“Mum, I kiss you”",
+    "story": "A message to a mother. The author is still unknown."
+   },
+   "es": {
+    "title": "«Mamá, te mando un beso»",
+    "story": "Un mensaje para una madre. El autor sigue siendo desconocido."
+   },
+   "ar": {
+    "title": "«أمي، أقبّلك»",
+    "story": "رسالة إلى أم. لا يزال كاتبها مجهولًا."
+   }
+  },
+  "real": false
+ },
+ {
+  "id": "espoir",
+  "graffiti": "Espoir",
+  "x": 1120,
+  "y": 385,
+  "r": 0.08,
+  "size": 32,
+  "special": false,
+  "label": "ia",
+  "i18n": {
+   "fr": {
+    "title": "« Espoir »",
+    "story": "Lecture proposée par l’IA, à vérifier."
+   },
+   "en": {
+    "title": "“Hope”",
+    "story": "Reading suggested by the AI, to be checked."
+   },
+   "es": {
+    "title": "«Espoir» (Esperanza)",
+    "story": "Lectura propuesta por la IA, por verificar."
+   },
+   "ar": {
+    "title": "«Espoir» (أمل)",
+    "story": "قراءة اقترحها الذكاء الاصطناعي، تحتاج إلى تحقق."
+   }
+  },
+  "real": false
+ },
+ {
+  "id": "ml",
+  "graffiti": "M.L.",
+  "x": 170,
+  "y": 400,
+  "r": -0.1,
+  "size": 34,
+  "special": false,
+  "label": "inconnu",
+  "i18n": {
+   "fr": {
+    "title": "« M.L. »",
+    "story": "Des initiales. On ne sait pas encore qui les a écrites."
+   },
+   "en": {
+    "title": "“M.L.”",
+    "story": "Initials. We do not know yet who wrote them."
+   },
+   "es": {
+    "title": "«M.L.»",
+    "story": "Unas iniciales. Aún no sabemos quién las escribió."
+   },
+   "ar": {
+    "title": "«M.L.»",
+    "story": "أحرف أولى. لا نعرف بعد من كتبها."
+   }
+  },
+  "real": false
+ }
+]

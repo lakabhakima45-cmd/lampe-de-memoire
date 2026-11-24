@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le mur · La lampe de mémoire</title>
+<link rel="stylesheet" href="/assets/style.css"><link rel="icon" href="data:,">
+<style>
+.wallbox{position:relative;border-radius:14px;overflow:hidden;background:#0A0806;aspect-ratio:16/9;touch-action:none;border:1px solid var(--line)}
+.wallbox canvas{position:absolute;inset:0;width:100%;height:100%;cursor:none}
+.hud{position:absolute;top:12px;inset-inline:12px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.chip{background:rgba(20,17,14,.82);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:500}
+.hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);transition:opacity .6s;max-width:90%;text-align:center}
+.found{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.found button{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:8px 14px;min-height:44px;font-family:Lora,serif;font-style:italic}
+.drawer{position:fixed;top:0;bottom:0;inset-inline-end:0;width:min(480px,100%);background:var(--paper);color:#2A2420;z-index:40;transform:translateX(105%);transition:transform .35s ease;overflow-y:auto;box-shadow:0 0 60px rgba(0,0,0,.5)}
+[dir=rtl] .drawer{transform:translateX(-105%)}
+.drawer.on{transform:none!important}
+.drawer .in{padding:28px 28px 40px;display:flex;flex-direction:column;gap:14px}
+.drawer h2{font-size:30px;color:#1E1B18}
+.drawer .eb{font-size:13px;font-weight:600;color:#8A4F0E}
+.drawer .close{position:absolute;top:12px;inset-inline-end:12px;width:44px;height:44px;border-radius:22px;border:1px solid #D9CBB4;background:#fff;font-size:20px;color:#1E1B18}
+.drawer .note{color:#5E554B}
+.drawer select,.drawer input,.drawer textarea{background:#fff;border-color:#D9CBB4;color:#2A2420}
+.drawer .btn{background:#EADFCB;border-color:#D9CBB4;color:#2A2420}.drawer .btn.p{background:var(--acc2);border-color:var(--acc2);color:#fff}
+.drawer label.chk{flex-direction:row;align-items:flex-start;gap:10px;font-weight:400;font-size:14px}
+.drawer label.chk input{width:22px;height:22px;min-height:0;flex:none;margin-top:2px}
+.contrib{background:#EADFCB;border-radius:10px;padding:10px 12px;font-size:15px;display:flex;flex-direction:column;gap:6px}
+.pipe{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.pipe li{display:grid;grid-template-columns:30px 1fr;gap:10px;opacity:.3;transition:opacity .3s}
+.pipe li.on{opacity:1}
+.pipe .n{width:30px;height:30px;border-radius:15px;background:#D9CBB4;display:grid;place-items:center;font-weight:700;font-size:13px}
+.pipe li.on .n{background:var(--acc2);color:#fff}
+.srow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 2.5em;gap:8px;align-items:center;font-size:13px}
+.srow .bar{background:#D9CBB4;height:8px}.srow .bar i{background:var(--acc2)}
+.srow.win{font-weight:700}
+</style>
+</head>
+<body>
+<main id="contenu" tabindex="-1"><section class="band" style="padding-top:28px"><div class="wrap">
+  <div class="pagehead" style="margin-bottom:16px"><h1 data-i18n="wall_title" style="font-size:clamp(28px,3.6vw,40px)"></h1></div>
+  <div class="wallbox">
+    <canvas id="wall" tabindex="0" role="application" data-i18n-aria="wall_alt"></canvas>
+    <div class="hud"><span class="chip" id="cnt" aria-live="polite"></span></div>
+    <span class="chip hint" id="hint" data-i18n="wall_hint"></span>
+  </div>
+  <div class="row" style="margin:14px 0 6px"><button class="btn" id="allLight" aria-pressed="false"></button><span class="note" data-i18n="wall_kbd"></span></div>
+  <h2 class="sr" data-i18n="wall_list"></h2>
+  <div class="found" id="foundList"></div>
+  <p class="note" style="margin-top:14px" data-i18n="wall_note"></p>
+  <p class="err" id="err" role="alert"></p>
+</div></section></main>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle"><button class="close" id="dClose" data-i18n-aria="f_close">×</button><div class="in" id="dIn"></div></aside>
+<script src="/assets/i18n.js"></script><script src="/assets/common.js"></script><script src="/assets/wall.js"></script>
+<script>
+{
+  let MS = [], wall = null, cur = null, lastFocus = null, allOn = false;
+  const dr = document.getElementById('drawer'), dIn = document.getElementById('dIn');
+  const tr = m => m.i18n[LANG()] || m.i18n.fr;
+  function updFound() {
+    document.getElementById('cnt').textContent = T('wall_found') + (wall ? wall.found.size : 0) + ' / ' + MS.length;
+    document.getElementById('foundList').innerHTML = MS.filter(m => wall && wall.found.has(m.id)).map(m => `<button data-m="${esc(m.id)}">${esc(tr(m).title)}</button>`).join('');
+    document.getElementById('allLight').textContent = T(allOn ? 'wall_all_off' : 'wall_all_on');
+  }
+  document.getElementById('foundList').onclick = e => { const b = e.target.closest('button'); if (b) openFiche(b.dataset.m); };
+  document.getElementById('allLight').onclick = e => { allOn = !allOn; wall.setAll(allOn); e.target.setAttribute('aria-pressed', allOn); updFound(); };
+  document.getElementById('wall').addEventListener('pointermove', () => { document.getElementById('hint').style.opacity = 0; }, { once: true });
+
+  function openDrawer() { if (!dr.classList.contains('on')) lastFocus = document.activeElement; dr.classList.add('on'); const t = document.getElementById('dTitle'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } }
+  function closeDrawer() { dr.classList.remove('on'); cur = null; try { speechSynthesis.cancel(); } catch {} if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  document.getElementById('dClose').onclick = closeDrawer;
+  addEventListener('keydown', e => { if (e.key === 'Escape' && dr.classList.contains('on')) closeDrawer(); });
+
+  function openFiche(id) {
+    cur = id; const m = MS.find(x => x.id === id), t = tr(m), L = T('labels');
+    dIn.innerHTML = `<p class="eb">${esc(T('f_record'))}</p><h2 id="dTitle">${esc(t.title)}</h2>
+    <div class="row"><span class="label l-${esc(m.label)}">${esc(L[m.label])}</span><span class="note">${esc(T(m.real ? 'f_real' : 'f_example'))}</span></div>
+    <p style="font-size:17px;line-height:1.65">${esc(t.story)}</p>
+    <div class="row"><button class="btn p" id="listen">${esc(T('f_listen'))}</button><span class="note" id="lst" aria-live="polite"></span></div>
+    <h3 style="font-size:19px;margin-top:6px">${esc(T('f_added'))}</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">${m.contributions.length ? m.contributions.map(c => `<div class="contrib"><span class="label l-${esc(c.label)}">${esc(L[c.label] || c.label)}</span><div dir="auto">${esc(c.text)}</div></div>`).join('') : `<p class="note">${esc(T('f_none'))}</p>`}</div>
+    <button class="btn" id="addInfo">${esc(T('f_add'))}</button>`;
+    openDrawer();
+    document.getElementById('listen').onclick = () => speak(t.title + '. ' + t.story);
+    document.getElementById('addInfo').onclick = () => openForm(id);
+  }
+  function speak(text) { const el = document.getElementById('lst'); try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = T('_voice'); u.rate = .95; u.onend = () => el.textContent = ''; speechSynthesis.speak(u); el.textContent = T('f_playing'); } catch { el.textContent = T('f_novoice'); } }
+
+  function openForm(id) {
+    const m = MS.find(x => x.id === id);
+    dIn.innerHTML = `<p class="eb">${esc(T('f_add'))}</p><h2 id="dTitle">${esc(tr(m).title)}</h2>
+    <form id="cf" style="display:flex;flex-direction:column;gap:14px" novalidate>
+      <label>${esc(T('form_type'))}<select id="cType">${Object.entries(T('types')).map(([k, v]) => `<option value="${k}"${k === 'souvenir' ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></label>
+      <label>${esc(T('form_text'))}<textarea id="cText" rows="5" required dir="auto">${esc(T('form_prefill'))}</textarea></label>
+      <label>${esc(T('form_file'))}<input type="file" id="cFile" accept="image/png,image/jpeg,image/webp,application/pdf"></label>
+      <label>${esc(T('form_mail'))}<input type="email" id="cMail" autocomplete="email" dir="ltr"></label>
+      <label class="chk"><input type="checkbox" id="cConsent"> <span>${esc(T('form_consent'))}</span></label>
+      <p class="note">${esc(T('form_nopub'))}</p>
+      <p class="err" id="fErr" role="alert"></p>
+      <div class="row"><button class="btn p" type="submit">${esc(T('form_send'))}</button><button class="btn" type="button" id="cBack">${esc(T('form_back'))}</button></div>
+    </form>`;
+    openDrawer();
+    document.getElementById('cBack').onclick = () => openFiche(id);
+    document.getElementById('cf').onsubmit = async e => {
+      e.preventDefault(); const fErr = document.getElementById('fErr'); fErr.textContent = '';
+      const f = document.getElementById('cFile').files[0];
+      if (f && f.size > 2 * 1024 * 1024) { fErr.textContent = T('form_toobig'); return; }
+      const file_data = f ? await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(f); }) : null;
+      const btn = e.target.querySelector('[type=submit]'); btn.disabled = true;
+      try {
+        const res = await api('/api/contributions', { method: 'POST', body: { msg: id, type: document.getElementById('cType').value, text: document.getElementById('cText').value, email: document.getElementById('cMail').value, consent: document.getElementById('cConsent').checked, file_name: f ? f.name : null, file_data } });
+        showPipeline(res, id);
+      } catch (err) { fErr.textContent = err.message; btn.disabled = false; }
+    };
+  }
+  function showPipeline(c, id) {
+    const S = T('p_steps'), sc = (c.scores || []).slice().sort((a, b) => b.score - a.score), max = Math.max(1, ...sc.map(s => s.score));
+    const rows = [
+      [S[0], `${esc(T('p_saved'))}${c.id} · ${esc(T('p_status'))} : ${esc(T('st')[c.status] || c.status)}`],
+      [S[1], `${esc(T('p_lang'))} : ${esc(c.lang)} · ${esc(T('p_kw'))} : ${c.keywords.length ? c.keywords.map(k => `<span class="kw">${esc((T('kw') || {})[k] || k)}</span>`).join('') : '—'}`],
+      [S[2], esc(c.spam ? T('p_spam') : c.dup ? T('p_dup') : T('p_ok'))],
+      [S[3], c.assigned ? `<b>${esc(c.assigned)}</b><div style="display:flex;flex-direction:column;gap:5px;margin-top:6px" dir="ltr">${sc.map(s => `<div class="srow${s.nom === c.assigned ? ' win' : ''}"><span>${esc(s.nom)}</span><span class="bar"><i style="width:${Math.max(0, s.score) / max * 100}%"></i></span><span class="num">${s.score < 0 ? '—' : s.score}</span></div>`).join('')}</div>` : '—'],
+      [S[4], c.assigned ? `${esc(c.assigned)} ${esc(T('p_notified'))}` : '—']];
+    dIn.innerHTML = `<p class="eb">${esc(T('p_thanks'))}</p><h2 id="dTitle">${esc(T('p_title'))}</h2>
+    <ol class="pipe">${rows.map((r, i) => `<li><span class="n">${i + 1}</span><div><b>${esc(r[0])}</b><div style="font-size:14px">${r[1]}</div></div></li>`).join('')}</ol>
+    <p class="note">${esc(T('p_after'))}</p><button class="btn" id="pBack">${esc(T('form_back'))}</button>`;
+    openDrawer();
+    document.getElementById('pBack').onclick = () => openFiche(id);
+    [...dIn.querySelectorAll('.pipe li')].forEach((li, i) => setTimeout(() => li.classList.add('on'), 200 + i * 450));
+  }
+
+  async function load() {
+    try {
+      MS = await api('/api/messages');
+      if (!wall) wall = makeWall(document.getElementById('wall'), MS, { onFound: updFound, onOpen: m => openFiche(m.id) });
+      wall.markNew(MS.filter(m => m.contributions.length).map(m => m.id));
+      updFound();
+    } catch { document.getElementById('err').textContent = T('offline'); }
+  }
+  addEventListener('langchange', () => { updFound(); if (cur && dr.classList.contains('on') && document.getElementById('addInfo')) openFiche(cur); });
+  load(); updFound();
+}
+</script>
+</body>
+</html>

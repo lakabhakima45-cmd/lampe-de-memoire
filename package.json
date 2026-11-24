@@ -1,0 +1,13 @@
+{
+  "name": "lampe-de-memoire",
+  "version": "1.0.0",
+  "description": "La lampe de mémoire : un mur dans le noir qu'on éclaire pour révéler les messages de la casemate n°17 du Fort de Romainville.",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node --no-warnings server/server.js",
+    "test": "node --no-warnings --test"
+  },
+  "engines": { "node": ">=22.5" },
+  "license": "UNLICENSED",
+  "private": true
+}

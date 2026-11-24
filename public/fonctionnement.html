@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La lampe de mémoire</title>
+<link rel="stylesheet" href="/assets/style.css"><link rel="icon" href="data:,">
+</head>
+<body>
+<main id="contenu" tabindex="-1">
+<section class="band"><div class="wrap"><div class="pagehead"><h1 data-i18n="how_title"></h1><p class="lead" data-i18n="how_lead"></p></div>
+<h2 data-i18n="how_v_h" style="margin-bottom:14px"></h2><div class="steps" id="vsteps"></div></div></section>
+<section class="band alt"><div class="wrap"><h2 data-i18n="how_c_h" style="margin-bottom:14px"></h2><div class="steps" id="csteps"></div></div></section>
+<section class="band"><div class="wrap split">
+ <div class="card"><h2 data-i18n="how_rule_h" style="font-size:26px"></h2><ul class="list" data-i18n-list="how_rule"></ul></div>
+ <div class="card"><h2 data-i18n="how_many_h" style="font-size:26px"></h2><p data-i18n="how_many_p"></p><div class="labels" id="labels"></div></div>
+</div></section>
+<section class="band paper"><div class="wrap"><h2 data-i18n="how_roles_h" style="margin-bottom:14px"></h2>
+<table class="stack"><thead><tr id="rth"></tr></thead><tbody id="roles"></tbody></table></div></section>
+</main>
+<script src="/assets/i18n.js"></script><script src="/assets/common.js"></script>
+<script>
+{ const draw=()=>{
+  document.getElementById('vsteps').innerHTML=T('how_v').map(s=>`<div class="step">${esc(s)}</div>`).join('');
+  document.getElementById('csteps').innerHTML=T('how_c').map(s=>`<div class="step">${esc(s)}</div>`).join('');
+  document.getElementById('rth').innerHTML=T('how_role_th').map(s=>`<th>${esc(s)}</th>`).join('');
+  document.getElementById('roles').innerHTML=T('how_roles').map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td></tr>`).join('');
+  document.getElementById('labels').innerHTML=Object.entries(T('labels')).map(([k,v])=>`<span class="label l-${k}">${esc(v)}</span>`).join('');};
+  addEventListener('langchange',draw);draw(); }
+</script>
+</body>
+</html>
